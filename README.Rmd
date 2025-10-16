@@ -49,7 +49,7 @@ shinycurate::run_app()
 
 Then you'll need to upload 
 
-1) a two column data.frame with colums (id, text). 
+1) a two column data.frame with columns (id, text). 
 2) A database to store your curation results. 
 
 You can generate this using the `create_database()` function.

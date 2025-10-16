@@ -9,8 +9,13 @@
 experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](https://lifecycle.r-lib.org/articles/stages.html#experimental)
 <!-- badges: end -->
 
-Use a shiny app to look through set of text/images, manually enter
-values based on the curation of the text
+> \[!WARNING\]  
+> This package was designed for local use only, we do not reccomend
+> hosting remotely. This package is in early development and not yet
+> ready for use
+
+Use a shiny app to look through set of text, manually enter values based
+on the curation of the text.
 
 ## Installation
 
@@ -35,7 +40,7 @@ shinycurate::run_app()
 
 Then you’ll need to upload
 
-1)  a two column data.frame with colums (id, text).
+1)  a two column data.frame with columns (id, text).
 2)  A database to store your curation results.
 
 You can generate this using the `create_database()` function.
