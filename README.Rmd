@@ -19,42 +19,37 @@ output: github_document
 [![Lifecycle: experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](https://lifecycle.r-lib.org/articles/stages.html#experimental)
 <!-- badges: end -->
 
+> [!WARNING]  
+> This package was designed for local use only, we do not reccomend hosting remotely.
+> This package is in early development and not yet ready for use
+
+
+Use a shiny app to look through set of text, manually enter values based on the curation of the text.
+
 ## Installation
 
 You can install the development version of `{shinycurate}` like so:
 
-```{r}
-# FILL THIS IN! HOW CAN PEOPLE INSTALL YOUR DEV PACKAGE?
+```r
+if (!require("remotes"))
+    install.packages("remotes")
+
+remotes::install_github("selkamand/shinycurate")
 ```
 
-## Run
+## Quick Start
 
 You can launch the application by running:
 
 ```{r, eval = FALSE}
+create_database(path = "mydb.sqlite", template = c(id="TEXT", ncells = "INTEGER", cellproportion = "REAL"))
+
 shinycurate::run_app()
 ```
 
-## About
+Then you'll need to upload 
 
-You are reading the doc about version : `r golem::pkg_version()`
+1) a two column data.frame with colums (id, text). 
+2) A database to store your curation results. 
 
-This README has been compiled on the
-
-```{r}
-Sys.time()
-```
-
-Here are the tests results and package coverage:
-
-```{r, error = TRUE}
-devtools::check(quiet = TRUE)
-```
-
-```{r echo = FALSE}
-unloadNamespace("shinycurate")
-```
-
-```{r, error = TRUE}
-covr::package_coverage()
-```
+You can generate this using the `create_database()` function.

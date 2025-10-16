@@ -1,0 +1,41 @@
+
+<!-- README.md is generated from README.Rmd. Please edit that file -->
+
+# `{shinycurate}`
+
+<!-- badges: start -->
+
+[![Lifecycle:
+experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](https://lifecycle.r-lib.org/articles/stages.html#experimental)
+<!-- badges: end -->
+
+Use a shiny app to look through set of text/images, manually enter
+values based on the curation of the text
+
+## Installation
+
+You can install the development version of `{shinycurate}` like so:
+
+``` r
+if (!require("remotes"))
+    install.packages("remotes")
+
+remotes::install_github("selkamand/shinycurate")
+```
+
+## Quick Start
+
+You can launch the application by running:
+
+``` r
+create_database(path = "mydb.sqlite", template = c(id="TEXT", ncells = "INTEGER", cellproportion = "REAL"))
+
+shinycurate::run_app()
+```
+
+Then you’ll need to upload
+
+1)  a two column data.frame with colums (id, text).
+2)  A database to store your curation results.
+
+You can generate this using the `create_database()` function.

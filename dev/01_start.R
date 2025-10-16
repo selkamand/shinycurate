@@ -23,9 +23,9 @@ golem::fill_desc(
   pkg_title = "Curate Any Property From Text Block", # What the Package Does (One Line, Title Case, No Period)
   pkg_description = "PKG_DESC.", # What the package does (one paragraph).
   authors = person(
-    given = "AUTHOR_FIRST", # Your First Name
-    family = "AUTHOR_LAST", # Your Last Name
-    email = "AUTHOR@MAIL.COM", # Your email
+    given = "Sam", # Your First Name
+    family = "El-Kamand", # Your Last Name
+    email = "selkamand@ccia.org.au", # Your email
     role = c("aut", "cre") # Your role (here author/creator)
   ),
   repo_url = NULL, # The URL of the GitHub repo (optional),
@@ -38,12 +38,12 @@ golem::install_dev_deps()
 
 ## Create Common Files ----
 ## See ?usethis for more information
-usethis::use_mit_license("Golem User") # You can set another license here
+usethis::use_mit_license(copyright_holder = "Children's Cancer Institute Australia") # You can set another license here
 golem::use_readme_rmd(open = FALSE)
 devtools::build_readme()
 # Note that `contact` is required since usethis version 2.1.5
 # If your {usethis} version is older, you can remove that param
-usethis::use_code_of_conduct(contact = "Golem User")
+usethis::use_code_of_conduct(contact = "Sam El-Kamand")
 usethis::use_lifecycle_badge("Experimental")
 usethis::use_news_md(open = FALSE)
 
@@ -65,7 +65,7 @@ usethis::use_git()
 ## Sets the remote associated with 'name' to 'url'
 usethis::use_git_remote(
   name = "origin",
-  url = "https://github.com/<OWNER>/<REPO>.git"
+  url = "https://github.com/selkamand/shinycurate.git"
 )
 
 # You're now set! ----
