@@ -2,7 +2,7 @@
 % Please edit documentation in R/utils_helpers.R
 \name{create_database}
 \alias{create_database}
-\title{Create a SQLite DB for `{shinycurate}` results}
+\title{Create a SQLite DB for `shinycurate` results}
 \usage{
 create_database(path, template = default_template, overwrite = TRUE)
 }

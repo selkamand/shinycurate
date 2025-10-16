@@ -83,7 +83,7 @@ app_server <- function(input, output, session) {
   db_table <- reactive({
     validate(need(db_conn(), message = "Please upload sqlite database"))
     input$in_refresh_db # Trigger new table when refresh action link is clicked
-    DBI:::dbGetQuery(db_conn(), "SELECT * FROM table1")
+    DBI::dbGetQuery(db_conn(), "SELECT * FROM table1")
   })
 
 

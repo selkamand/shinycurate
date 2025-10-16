@@ -1,4 +1,4 @@
-#' Create a SQLite DB for `{shinycurate}` results
+#' Create a SQLite DB for `shinycurate` results
 #'
 #' @description Create (or replace) a `"table1"` results table in a SQLite file.
 #' If `template` is a data frame, the table is created and populated; if it's a
