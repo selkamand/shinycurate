@@ -39,7 +39,8 @@ app_ui <- function(request) {
           bslib::card_header("Navigate Cases"),
           bslib::card_body(
             style = bslib::css(overflow = "visible"),
-            shiny::selectInput(inputId = "in_current_id", label = "Case ID", choices = NULL, width = "100%")
+            shiny::selectInput(inputId = "in_current_id", label = "Case ID", choices = NULL, width = "100%"),
+            actionButton(inputId = "in_next_hit", label = "Go to next case not already in DB")
           )
 
         ),
