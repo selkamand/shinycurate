@@ -4,12 +4,13 @@
 \alias{create_database}
 \title{Create a SQLite DB for `shinycurate` results}
 \usage{
-create_database(path, template = default_template, overwrite = TRUE)
+create_database(path, template = default_template(), overwrite = TRUE)
 }
 \arguments{
 \item{path}{Path to the `.sqlite` file (created if missing).}
 
-\item{template}{Data frame of rows **or** named character vector of SQLite types.}
+\item{template}{Data frame of rows **or** named character vector of SQLite types. If a vector, template values can include "TEXT", "REAL", "INTEGER", or "BOOLEAN"
+(converted to INTEGER because sqlite doesn't have logical type.}
 
 \item{overwrite}{Logical; drop existing `"table1"` before (re)creating. Default `TRUE`.}
 }

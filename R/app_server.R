@@ -147,70 +147,70 @@ app_server <- function(input, output, session) {
 
 
 # # Hydrate dynamic UI based on selected entry ------------------------------
-  # When the selected ID or the DB table changes, hydrate controls from DB
-  observeEvent(list(input$in_current_id, db_table()), {
-    conn <- db_conn(); req(conn)
-    id_chr <- input$in_current_id; req(nzchar(id_chr))
-
-    # Try to cast to integer if your DB id is INTEGER, else keep as char
-    id_val <- suppressWarnings(as.integer(id_chr))
-    if (is.na(id_val)) id_val <- id_chr
-
-    cols <- non_id_cols(); req(nrow(cols) > 0)
-
-    # Build SELECT only for the dynamic columns
-    qcols <- DBI::dbQuoteIdentifier(conn, cols$name)
-    sql   <- sprintf("SELECT %s FROM %s WHERE %s = ? LIMIT 1",
-                     paste(qcols, collapse = ", "),
-                     DBI::dbQuoteIdentifier(conn, "table1"),
-                     DBI::dbQuoteIdentifier(conn, "id"))
-
-    row <- tryCatch(DBI::dbGetQuery(conn, sql, params = list(id_val)), error = function(e) NULL)
-
-    # If row not found, clear the controls and return
-    if (is.null(row) || nrow(row) == 0) {
-      lapply(cols$name, function(nm) {
-        inputId <- paste0("in_prop_", nm)
-        # Try each updater; whichever exists will succeed
-        try(updateCheckboxInput(session, inputId, value = FALSE), silent = TRUE)
-        try(updateNumericInput(session, inputId, value = NA), silent = TRUE)
-        try(updateDateInput(session, inputId, value = NULL), silent = TRUE)
-        try(updateSelectizeInput(session, inputId, selected = NULL), silent = TRUE)
-        try(updateTextInput(session, inputId, value = ""), silent = TRUE)
-      })
-      return(invisible())
-    }
-
-    # Populate controls with DB values
-    row <- row[1, , drop = FALSE]
-    for (i in seq_len(nrow(cols))) {
-      nm   <- cols$name[i]
-      typ  <- cols$type[i] %||% ""
-      val  <- row[[nm]]
-      inputId <- paste0("in_prop_", nm)
-
-      # Choose updater based on SQLite type hints; fall back gracefully
-      if (grepl("BOOL", typ, ignore.case = TRUE)) {
-        try(updateCheckboxInput(session, inputId, value = as.logical(as.integer(val %||% 0))), silent = TRUE)
-
-      } else if (grepl("DATE|TIME", typ, ignore.case = TRUE)) {
-        v <- suppressWarnings(as.Date(val))
-        try(updateDateInput(session, inputId, value = v), silent = TRUE)
-
-      } else if (grepl("INT|REAL|NUM|DOUBLE|DECIMAL", typ, ignore.case = TRUE)) {
-        v <- suppressWarnings(as.numeric(val))
-        try(updateNumericInput(session, inputId, value = v), silent = TRUE)
-
-      } else {
-        # Prefer selectize (multi) if present; otherwise text
-        sel <- if (is.character(val) && grepl(",", val)) split_commas(val) else val
-        ok  <- try(updateSelectizeInput(session, inputId, selected = sel, server = TRUE), silent = TRUE)
-        if (inherits(ok, "try-error")) {
-          try(updateTextInput(session, inputId, value = as.character(val %||% "")), silent = TRUE)
-        }
-      }
-    }
-  }, ignoreInit = FALSE)
+  # # When the selected ID or the DB table changes, hydrate controls from DB
+  # observeEvent(list(input$in_current_id, db_table()), {
+  #   conn <- db_conn(); req(conn)
+  #   id_chr <- input$in_current_id; req(nzchar(id_chr))
+  #
+  #   # Try to cast to integer if your DB id is INTEGER, else keep as char
+  #   id_val <- suppressWarnings(as.integer(id_chr))
+  #   if (is.na(id_val)) id_val <- id_chr
+  #
+  #   cols <- non_id_cols(); req(nrow(cols) > 0)
+  #
+  #   # Build SELECT only for the dynamic columns
+  #   qcols <- DBI::dbQuoteIdentifier(conn, cols$name)
+  #   sql   <- sprintf("SELECT %s FROM %s WHERE %s = ? LIMIT 1",
+  #                    paste(qcols, collapse = ", "),
+  #                    DBI::dbQuoteIdentifier(conn, "table1"),
+  #                    DBI::dbQuoteIdentifier(conn, "id"))
+  #
+  #   row <- tryCatch(DBI::dbGetQuery(conn, sql, params = list(id_val)), error = function(e) NULL)
+  #
+  #   # If row not found, clear the controls and return
+  #   if (is.null(row) || nrow(row) == 0) {
+  #     lapply(cols$name, function(nm) {
+  #       inputId <- paste0("in_prop_", nm)
+  #       # Try each updater; whichever exists will succeed
+  #       try(updateCheckboxInput(session, inputId, value = FALSE), silent = TRUE)
+  #       try(updateNumericInput(session, inputId, value = NA), silent = TRUE)
+  #       try(updateDateInput(session, inputId, value = NULL), silent = TRUE)
+  #       try(updateSelectizeInput(session, inputId, selected = NULL), silent = TRUE)
+  #       try(updateTextInput(session, inputId, value = ""), silent = TRUE)
+  #     })
+  #     return(invisible())
+  #   }
+  #
+  #   # Populate controls with DB values
+  #   row <- row[1, , drop = FALSE]
+  #   for (i in seq_len(nrow(cols))) {
+  #     nm   <- cols$name[i]
+  #     typ  <- cols$type[i] %||% ""
+  #     val  <- row[[nm]]
+  #     inputId <- paste0("in_prop_", nm)
+  #
+  #     # Choose updater based on SQLite type hints; fall back gracefully
+  #     if (grepl("BOOL", typ, ignore.case = TRUE)) {
+  #       try(updateCheckboxInput(session, inputId, value = as.logical(as.integer(val %||% 0))), silent = TRUE)
+  #
+  #     } else if (grepl("DATE|TIME", typ, ignore.case = TRUE)) {
+  #       v <- suppressWarnings(as.Date(val))
+  #       try(updateDateInput(session, inputId, value = v), silent = TRUE)
+  #
+  #     } else if (grepl("INT|REAL|NUM|DOUBLE|DECIMAL", typ, ignore.case = TRUE)) {
+  #       v <- suppressWarnings(as.numeric(val))
+  #       try(updateNumericInput(session, inputId, value = v), silent = TRUE)
+  #
+  #     } else {
+  #       # Prefer selectize (multi) if present; otherwise text
+  #       sel <- if (is.character(val) && grepl(",", val)) split_commas(val) else val
+  #       ok  <- try(updateSelectizeInput(session, inputId, selected = sel, server = TRUE), silent = TRUE)
+  #       if (inherits(ok, "try-error")) {
+  #         try(updateTextInput(session, inputId, value = as.character(val %||% "")), silent = TRUE)
+  #       }
+  #     }
+  #   }
+  # }, ignoreInit = FALSE)
 
 
 
