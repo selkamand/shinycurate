@@ -10,6 +10,7 @@ app_server <- function(input, output, session) {
 # Read Inputs -------------------------------------------------------------
 
 
+
   # Fetch Curation Dataframe
   curation_df <- reactive({
     req(input$in_file_curate)
@@ -35,6 +36,7 @@ app_server <- function(input, output, session) {
     df
   })
 
+
   # Get list of all ID values
   all_ids <- eventReactive(curation_df(), {
     df  <- curation_df()
@@ -53,6 +55,8 @@ app_server <- function(input, output, session) {
     updateSelectInput(session, "in_current_id",
                       choices = all_ids())
   }, ignoreInit = FALSE)
+
+
 
   # Get REGEX (for highlighting cetain
   pattern <- reactive({input$in_regex})
@@ -79,6 +83,7 @@ app_server <- function(input, output, session) {
     DBI::dbConnect(RSQLite::SQLite(), picked_db_path())
   })
 
+
   # Database Table
   db_table <- reactive({
     validate(need(db_conn(), message = "Please upload sqlite database"))
@@ -86,10 +91,18 @@ app_server <- function(input, output, session) {
     DBI::dbGetQuery(db_conn(), "SELECT * FROM table1")
   })
 
-
+  # Read in Database Template (used to generate property insights)
+  template <- reactive({
+    req(picked_db_path())
+    expected_template_path <- paste0(picked_db_path(), ".template.csv")
+    message("Searching for template.csv at", expected_template_path)
+    tmp <- read_database_template_file(expected_template_path)
+    print(tmp)
+    return(tmp)
+  })
 
   # Create UI for filling in missing info ------------------------------------------------
-  # TODO: add this component and database editing
+  case_inputs <- mod_template_to_inputs_server(id = "mod_db_column_inputs", template = template)
 
   # Downloads / Exports ---------------------------------------------------------------
 
@@ -132,57 +145,8 @@ app_server <- function(input, output, session) {
     picked_db_path()
     })
 
-  # Dynamic Database Property UI --------------------------------------------
-  # Columns and types from SQLite
-  db_columns <- reactive({
-    conn <- db_conn()
-    validate(need(conn, "Select a SQLite database"))
-    # table1 assumed; adjust if needed
-    info <- DBI::dbGetQuery(conn, "PRAGMA table_info(table1)")
-    # info: cid, name, type, notnull, dflt_value, pk
-    info
-  })
 
-  # Non-ID columns: drop primary key, 'id', and *_id
-  non_id_cols <- reactive({
-    info <- db_columns()
-    subset(info,
-           !(pk == 1 | tolower(name) == "id" | grepl("_id$", name, ignore.case = TRUE)))
-  })
-
-  # Fetch up to N distinct values for a column (to decide widget type)
-  distinct_values <- function(conn, col, n = 1000L) {
-    qcol <- DBI::dbQuoteIdentifier(conn, col)
-    sql  <- sprintf("SELECT DISTINCT %s AS v FROM table1 WHERE %s IS NOT NULL LIMIT %d",
-                    qcol, qcol, n)
-    tryCatch(DBI::dbGetQuery(conn, sql)[["v"]], error = function(e) NULL)
-  }
-
-  # Render the full set of controls
-  output$out_db_column_controls <- renderUI({
-    # Rebuild when the table changes (yours updates on refresh)
-    db_table()  # dependency anchor so refresh re-renders controls
-
-    conn <- db_conn()
-    cols <- non_id_cols()
-    validate(need(nrow(cols) > 0, "No non-ID columns found."))
-
-    tagList(lapply(seq_len(nrow(cols)), function(i) {
-      nm   <- cols$name[i]
-      typ  <- cols$type[i] %||% ""
-      vals <- distinct_values(conn, nm)
-      make_input_for_column(id = nm, label = to_title(nm), type = typ, distinct_vals = vals)
-    }))
-  })
-
-  # Get reactive with all properties
-  db_props <- reactive({
-    cols <- non_id_cols()$name
-    setNames(lapply(cols, function(nm) input[[paste0("in_prop_", nm)]]), cols)
-  })
-
-
-# Hydrate dynamic UI based on selected entry ------------------------------
+# # Hydrate dynamic UI based on selected entry ------------------------------
   # When the selected ID or the DB table changes, hydrate controls from DB
   observeEvent(list(input$in_current_id, db_table()), {
     conn <- db_conn(); req(conn)
@@ -263,7 +227,7 @@ app_server <- function(input, output, session) {
     if (is.na(case_id)) case_id <- case_id_chr
 
     # Collect sidebar values
-    props <- db_props()                          # named list col -> value
+    props <- case_inputs()                          # named list col -> value
     cols  <- names(props)
     vals  <- lapply(props, coerce_for_sql)       # your helper: logical->1/0, ""->NA, multi->"a, b"
     keep  <- vapply(vals, function(v) !(is.null(v) || (length(v) == 1 && is.na(v))), logical(1))

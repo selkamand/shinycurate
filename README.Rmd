@@ -42,9 +42,10 @@ remotes::install_github("selkamand/shinycurate")
 You can launch the application by running:
 
 ```{r, eval = FALSE}
-create_database(path = "mydb.sqlite", template = c(id="TEXT", ncells = "INTEGER", cellproportion = "REAL"))
+template <- c(id="TEXT", ncells = "INTEGER", cellproportion = "REAL", approved = "BOOLEAN")
+create_database(path = "mydb.sqlite", template)
 
-shinycurate::run_app()
+# shinycurate::run_app()
 ```
 
 Then you'll need to upload 

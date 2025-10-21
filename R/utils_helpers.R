@@ -5,7 +5,8 @@
 #' named vector of SQLite types, an empty table is created.
 #'
 #' @param path      Path to the `.sqlite` file (created if missing).
-#' @param template  Data frame of rows **or** named character vector of SQLite types.
+#' @param template  Data frame of rows **or** named character vector of SQLite types. If a vector, template values can include "TEXT", "REAL", "INTEGER", or "BOOLEAN"
+#'  (converted to INTEGER because sqlite doesn't have logical type.
 #' @param overwrite Logical; drop existing `"table1"` before (re)creating. Default `TRUE`.
 #'
 #' @return A `DBIConnection`. Disconnect with `DBI::dbDisconnect()`.
@@ -22,13 +23,17 @@
 #' }
 #'
 #' @export
-create_database <- function(path, template = default_template, overwrite=TRUE){
+create_database <- function(path, template = default_template(), overwrite=TRUE){
+
 
   con <- RSQLite::dbConnect(RSQLite::SQLite(), path)
 
   if((is.data.frame(template) & !"id" %in% colnames(template)) | !"id" %in% names(template)) stop("Template MUST include an `id` column")
   if(is.vector(template) & template[names(template) == "id"] != "TEXT") stop("`id` column in template must define a TEXT column")
   name = "table1"
+
+  # Automatically turn BOOLEAN into REAL
+  if(is.vector(template) & "BOOLEAN" %in% template) {template[template %in% "BOOLEAN"] <- "INTEGER"}
 
   # Overwrite = drop so we can create again
   if (overwrite && RSQLite::dbExistsTable(con, name)) {
@@ -47,7 +52,29 @@ create_database <- function(path, template = default_template, overwrite=TRUE){
   RSQLite::dbCreateTable(conn = con, name, fields = template)
   # add_id_column(con)
 
+  # Also write the template to the sampe file
+  path_template <- paste0(path, ".template.csv")
+  df_template <- data.frame(
+    names = names(template),
+    types = template
+  )
+  write.csv(df_template, file = path_template, row.names = FALSE)
+
   return(con)
+}
+
+
+read_database_template_file <- function(path, drop_id = TRUE){
+  df = read.csv(path)
+
+  types <-  df[[2]]
+  names(types) <-  df[[1]]
+
+  if(drop_id){
+    types <- types[!names(types) %in% "id"]
+  }
+
+  return(types)
 }
 
 # add_id_column <- function(conn){
@@ -64,12 +91,19 @@ create_database <- function(path, template = default_template, overwrite=TRUE){
 #   )
 # }
 #
-# default_template <- c(
-#     id = "TEXT",
-#     numeric_feature = "REAL",
-#     text_feature = "TEXT",
-#     logical_feature = "INTEGER"
-#   )
+
+default_template <- function(){
+  c(
+    id = "TEXT",
+    numeric_feature = "REAL",
+    text_feature = "TEXT",
+    logical_feature = "BOOLEAN"
+  )
+}
+
+# query_from_template <- function(conn, id, template){
+#
+# }
 
 
 # helper: coerce R types to SQLite-friendly ones
@@ -169,7 +203,16 @@ coerce_for_sql <- function(x) {
 }
 
 `%||%` <- function(x, y) if (is.null(x) || length(x) == 0) y else x
+
 split_commas <- function(x) {
   if (is.null(x) || length(x) == 0 || is.na(x)) return(NULL)
   unlist(strsplit(as.character(x), "\\s*,\\s*"))
+}
+
+safe_id <- function(x) {
+  # Replace anything not alnum/underscore with underscore; ensure starts with letter
+  out <- gsub("[^A-Za-z0-9_]", "_", x)
+  out <- ifelse(grepl("^[A-Za-z]", out), out, paste0("x_", out))
+  # Make unique if duplicates
+  make.unique(out, sep = "_")
 }

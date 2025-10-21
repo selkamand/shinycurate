@@ -1,0 +1,5 @@
+"names","types"
+"id","TEXT"
+"ncells","INTEGER"
+"cellproportion","REAL"
+"approved","BOOLEAN"

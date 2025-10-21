@@ -52,7 +52,8 @@ app_ui <- function(request) {
         ),
         bslib::card(
           bslib::card_header("Database Properties"),
-          uiOutput("out_db_column_controls"),
+          mod_template_to_inputs_ui(id = "mod_db_column_inputs"),
+          # uiOutput("out_db_column_controls"),
           shiny::actionButton(inputId = "in_bttn_updatedb", label = "Update Database")
         )
 
