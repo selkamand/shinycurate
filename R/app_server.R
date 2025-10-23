@@ -68,9 +68,10 @@ app_server <- function(input, output, session) {
     all_ids_in_db <- fetch_all_ids_from_database(conn = db_conn(), table = "table1")
 
     df$in_db <- df$id %in% all_ids_in_db
+    df$regex_hit <- df$..regex_hit
 
     # 1) Try to find the next uncurated row *below* current
-    idx_pool  <- which(!df$in_db)
+    idx_pool  <- which(!df$in_db & df$regex_hit)
     idx_below <- idx_pool[idx_pool > current_rownumber]
 
     if (length(idx_below)) {
