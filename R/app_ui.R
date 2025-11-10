@@ -49,6 +49,7 @@ app_ui <- function(request) {
           shiny::textInput(inputId = "in_regex", label = "Search (Regex)", value = NA_character_, width = "100%"),
           shiny::checkboxInput(inputId = "in_regex_ignore_case", label = "Ignore Case", value = FALSE, width = "100%"),
           shiny::actionButton(inputId = "in_bttn_search_regex", label = "Search"),
+          shiny::htmlOutput(outputId = "out_text_regex_summary")
           # shiny::checkboxInput(inputId = "in_filter_", label = "Ignore Case", value = FALSE, width = "100%")
         ),
         bslib::card(

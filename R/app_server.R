@@ -189,6 +189,29 @@ app_server <- function(input, output, session) {
         )
     })
 
+  #
+  output$out_text_regex_summary <- renderText({
+    df <- curation_df()
+    df$id <- as.character(df$id)
+
+    total_regex_hits <- sum(df$..regex_hit, na.rm = TRUE)
+    total_entries    <- nrow(df)
+
+    # Safely get IDs currently in DB; if DB not ready, treat as none present
+    ids_in_db <- tryCatch(
+      fetch_all_ids_from_database(conn = db_conn(), table = "table1"),
+      error = function(e) character(0)
+    )
+    ids_in_db <- as.character(ids_in_db)
+
+    n_missing_entries <- sum(df$..regex_hit & !(df$id %in% ids_in_db), na.rm = TRUE)
+
+    glue::glue(
+      "Regex Hits: {total_regex_hits} / {total_entries}<br/>",
+      "Regex Hits not described in database: {n_missing_entries}"
+    )
+  }) |> bindEvent(input$in_bttn_search_regex, input$in_bttn_updatedb, input$in_refresh_db, curation_df(), db_table())
+
   output$out_picked_db_path <- renderText({
     validate(need(picked_db_path(), message = "Please Select Database"))
     picked_db_path()
