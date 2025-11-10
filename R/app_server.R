@@ -217,8 +217,36 @@ app_server <- function(input, output, session) {
     picked_db_path()
     })
 
+  # Update Database button
   observeEvent(input$in_bttn_updatedb, {
-    write_to_database(conn = db_conn(), id = current_case_id(), values = case_inputs(), template = template(), table = "table1")
+    tryCatch({
+      res <- write_to_database(
+        conn     = db_conn(),
+        id       = current_case_id(),
+        values   = case_inputs(),
+        template = template(),
+        table    = "table1"
+      )
+
+      # Show a brief confirmation toast
+      msg <- if (!is.null(res$action)) {
+        action <- if(res$action == "insert") "inserted new entry" else paste0(res$action, "d")
+        paste0("Case ", current_case_id(), " successfully ", action, " in database.")
+      } else {
+        paste0("Case ", current_case_id(), " successfully written to database.")
+      }
+
+      showNotification(msg, type = "message", duration = 3)
+
+      # Optionally refresh DB table view automatically
+      db_table()
+    },
+    error = function(e) {
+      showNotification(
+        paste("Failed to update database:", conditionMessage(e)),
+        type = "error", duration = 5
+      )
+    })
   })
 
 }
